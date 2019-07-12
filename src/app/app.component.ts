@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Todo } from './todo';
+import { TodoService } from './todo.service';
 
 @Component({
     selector: 'app-root',
@@ -10,33 +11,57 @@ export class AppComponent {
     public todos: Todo[];
     public todo: Todo;
     public activeFilter: string;
+    public binding: boolean;
 
-    constructor() {
+    constructor(private todoservice: TodoService) {
         this.todos = [];
         this.todo = new Todo();
         this.activeFilter = null;
-        this.retriveTodos();
+        this.binding = false;
+
+        this.todoservice.getTodos().subscribe(data => {
+            this.todos = data;
+            this.checkSelectAllInput();
+        });
     }
 
     addTodo() {
-        if (!this.todo.task) {
+        if (!this.todo.task || this.todo.task.length <= 2) {
             return;
         }
-
-        this.todos = [...this.todos, this.todo];
-        this.todo = new Todo();
-        this.storeTodos();
+        this.todoservice.createTodo(this.todo).subscribe(todo => {
+            this.todos = [...this.todos, todo];
+            this.todo = new Todo();
+        });
     }
 
     deleteTodo(todo: Todo) {
         const index = this.todos.indexOf(todo);
-        this.todos.splice(index, 1);
-        this.storeTodos();
+        this.todoservice.deleteTodo(todo.id).subscribe(() => {
+            this.todos.splice(index, 1);
+        });
     }
 
     toggleTodo(todo: Todo) {
-        todo.checked = !todo.checked;
-        this.storeTodos();
+        this.todoservice.updateTodo(todo).subscribe(
+            () => {},
+            () => {
+                this.todo.checked = !this.todo.checked;
+            }
+        );
+        this.checkSelectAllInput();
+    }
+
+    checkSelectAllInput() {
+        const checkedTodos = this.todos.filter(todo => todo.checked);
+        if (
+            checkedTodos.length > 0 &&
+            checkedTodos.length === this.todos.length
+        ) {
+            this.binding = true;
+        } else {
+            this.binding = false;
+        }
     }
 
     selectAll(event: Event) {
@@ -51,19 +76,10 @@ export class AppComponent {
                 checked: false
             }));
         }
-        this.storeTodos();
+        this.todoservice.selectAllTodos(this.todos).subscribe(() => {});
     }
 
     clearCompleted() {
         this.todos = this.todos.filter(todo => !todo.checked);
-    }
-
-    retriveTodos() {
-        const todos = localStorage.getItem('todos');
-        this.todos = JSON.parse(todos) || [];
-    }
-
-    storeTodos() {
-        localStorage.setItem('todos', JSON.stringify(this.todos));
     }
 }

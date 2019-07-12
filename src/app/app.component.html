@@ -1,4 +1,5 @@
 <div class="container mt-3">
+    <h5 class="text-center">Todo application</h5>
     <div class="row">
         <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-sm-12">
             <div class="card card-body bg-light">
@@ -13,6 +14,7 @@
                                     type="checkbox"
                                     class="custom-control-input"
                                     (change)="selectAll($event)"
+                                    [(ngModel)]="binding"
                                     id="select-all"
                                 />
                                 <label
@@ -28,71 +30,85 @@
                         type="text"
                         [(ngModel)]="todo.task"
                         (keyup.enter)="addTodo()"
+                        required
+                        minlength="3"
+                        #name="ngModel"
                     />
                 </div>
-                <ul class="list-group">
-                    <li
-                        class="list-group-item d-flex justify-content-between align-items-center"
-                        *ngFor="
-                            let todo of todos | filter: activeFilter;
-                            let index = index
-                        "
-                    >
-                        <div class="custom-control custom-checkbox">
-                            <input
-                                type="checkbox"
-                                class="custom-control-input"
-                                [id]="index"
-                                [(ngModel)]="todo.checked"
-                            />
-                            <label class="custom-control-label" [for]="index">
-                                <span [class.text-danger]="todo.checked">
-                                    {{ todo.task }}
-                                </span>
-                            </label>
-                        </div>
-                        <button
-                            class="btn btn-sm btn-danger badge-pill"
-                            (click)="deleteTodo(todo)"
-                        >
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    </li>
-                </ul>
-                <div class="row mt-3">
-                    <div class="col-md-4 col-sm-12">
-                        {{ (todos | filter: 'ACTIVE').length }} item(s) left
+                <div *ngIf="name.invalid && (name.dirty || name.touched)">
+                    <div class="text-danger" *ngIf="name?.errors.required">
+                        Text is required
                     </div>
-                    <div class="col-md-8 col-sm-12 text-right">
-                        <div class="btn-group">
-                            <button
-                                class="btn btn-primary btn-sm mr-1"
-                                (click)="activeFilter = null"
-                                [class.active]="activeFilter === null"
-                            >
-                                All
-                            </button>
-                            <button
-                                class="btn btn-primary btn-sm mr-1"
-                                (click)="activeFilter = 'ACTIVE'"
-                                [class.active]="activeFilter === 'ACTIVE'"
-                            >
-                                Active
-                            </button>
-                            <button
-                                class="btn btn-primary btn-sm mr-1"
-                                (click)="activeFilter = 'COMPLETE'"
-                                [class.active]="activeFilter === 'COMPLETE'"
-                            >
-                                Completed
-                            </button>
-                            <button
-                                class="btn btn-primary btn-sm"
-                                (click)="clearCompleted()"
-                            >
-                                Clear completed
-                            </button>
-                        </div>
+                    <div class="text-danger" *ngIf="name?.errors.minlength">
+                        Min length should be 3
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-sm-12">
+            <ul class="list-group">
+                <li
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                    *ngFor="
+                        let todo of todos | filter: activeFilter;
+                        let index = index
+                    "
+                >
+                    <div class="custom-control custom-checkbox">
+                        <input
+                            type="checkbox"
+                            class="custom-control-input"
+                            [id]="index"
+                            [(ngModel)]="todo.checked"
+                            (change)="toggleTodo(todo)"
+                        />
+                        <label class="custom-control-label" [for]="index">
+                            <span [class.text-danger]="todo.checked">
+                                {{ todo.task }}
+                            </span>
+                        </label>
+                    </div>
+                    <button
+                        class="btn btn-sm btn-danger badge-pill"
+                        (click)="deleteTodo(todo)"
+                    >
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </li>
+            </ul>
+            <div class="row mt-3">
+                <div class="col-md-4 col-sm-12">
+                    {{ (todos | filter: 'ACTIVE').length }} item(s) left
+                </div>
+                <div class="col-md-8 col-sm-12 text-right">
+                    <div class="btn-group">
+                        <button
+                            class="btn btn-primary btn-sm mr-1"
+                            (click)="activeFilter = null"
+                            [class.active]="activeFilter === null"
+                        >
+                            All
+                        </button>
+                        <button
+                            class="btn btn-primary btn-sm mr-1"
+                            (click)="activeFilter = 'ACTIVE'"
+                            [class.active]="activeFilter === 'ACTIVE'"
+                        >
+                            Active
+                        </button>
+                        <button
+                            class="btn btn-primary btn-sm mr-1"
+                            (click)="activeFilter = 'COMPLETE'"
+                            [class.active]="activeFilter === 'COMPLETE'"
+                        >
+                            Completed
+                        </button>
+                        <button
+                            class="btn btn-primary btn-sm"
+                            (click)="clearCompleted()"
+                        >
+                            Clear completed
+                        </button>
                     </div>
                 </div>
             </div>
